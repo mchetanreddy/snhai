@@ -1,20 +1,25 @@
-# LLM Dialogue Fine-tuning Pipeline
+# Dialogue-based LLM Training Pipeline
 
-This project implements a pipeline for fine-tuning Large Language Models (LLMs) on dialogue datasets. The implementation focuses on creating a reproducible and efficient training process with proper evaluation metrics.
+This project implements a training pipeline for fine-tuning a GPT-2 model on dialogue data. The pipeline includes data preparation, model training, and evaluation components.
 
 ## Project Structure
 
 ```
-├── data_prep.py      # Data loading and preprocessing
-├── train.py         # Model training and fine-tuning
-├── evaluate.py      # Model evaluation and generation
-├── requirements.txt # Project dependencies
-└── README.md       # Project documentation
+.
+├── data/
+│   └── prepare_data.py    # Data preprocessing and dataset creation
+├── train/
+│   └── train_model.py     # Model training script
+├── eval/
+│   └── evaluate_model.py  # Model evaluation and text generation
+├── models/                # Directory for saved model checkpoints
+├── dialogues.json         # Training data
+└── requirements.txt       # Project dependencies
 ```
 
 ## Setup
 
-1. Create a virtual environment:
+1. Create a virtual environment (recommended):
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -25,56 +30,62 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## Data Preprocessing
+## Usage
 
-The preprocessing pipeline:
-- Loads JSON dialogue data
-- Formats dialogues with special tokens for speaker separation
-- Tokenizes using GPT-2 tokenizer with custom special tokens
-- Splits data into training (80%) and validation (20%) sets
-- Creates PyTorch datasets for efficient training
+1. Data Preparation:
+```bash
+python data/prepare_data.py
+```
+
+2. Model Training:
+
+**Option 1 (Recommended):**
+Run from the project root using the `-m` flag:
+```bash
+python -m train.train_model
+```
+
+**Option 2:**
+Run the script directly (the script now handles the import path automatically):
+```bash
+python train/train_model.py
+```
+
+3. Model Evaluation:
+```bash
+python eval/evaluate_model.py
+```
 
 ## Model Architecture
 
-Initial implementation uses GPT-2 Medium (345M parameters) as the base model, which provides a good balance between:
-- Training speed and resource requirements
-- Model capacity for dialogue generation
-- Quality of generated outputs
+- Base Model: GPT-2
+- Training Parameters:
+  - Learning rate: 5e-5
+  - Batch size: 4
+  - Number of epochs: 3
+  - Max sequence length: 128
 
-## Training Configuration
+## Dataset Format
 
-- Optimizer: AdamW with learning rate 5e-5
-- Batch size: 8 (adjustable based on GPU memory)
-- Max sequence length: 512 tokens
-- Training epochs: 3
-- Gradient accumulation steps: 4
-- Mixed precision training enabled
+The training data is stored in `dialogues.json` with the following format:
+```json
+[
+    {
+        "Alex": "Hello, how are you?",
+        "Bob": "I'm doing well, thank you. How about you?",
+        "Alex": "I'm good too."
+    },
+    ...
+]
+```
+
+## Model Checkpoints
+
+Model checkpoints are saved in the `models/` directory after each epoch. The latest checkpoint is automatically used for evaluation.
 
 ## Evaluation
 
-The model is evaluated on:
-- Validation perplexity
-- Sample dialogue generation quality
-- Context retention
-- Response coherence
-
-## Usage
-
-1. Prepare the data:
-```bash
-python data_prep.py
-```
-
-2. Train the model:
-```bash
-python train.py
-```
-
-3. Evaluate and generate samples:
-```bash
-python evaluate.py
-```
-
-## Results
-
-Training metrics and sample generations will be logged to Weights & Biases for easy visualization and tracking. 
+The evaluation script generates responses for sample prompts and demonstrates the model's ability to engage in dialogue. Sample prompts include:
+- "Alex: Do you like movies?\nBob:"
+- "Alex: What's your favorite programming language?\nBob:"
+- "Alex: How are you today?\nBob:" 
